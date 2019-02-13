@@ -17,11 +17,11 @@ public class Lab1 {
 	  this.speed1= speed1;
 	  this.speed2 = speed2;
 	  
-	  Semaphore sem = new Semaphore(1,true);
+	  Semaphore sem = new Semaphore(1);
     
 
       Thread trainT1	= new Thread(new Train(trainId1,speed1,sem));
-      Thread trainT2	= new Thread(new Train(trainId2,speed2,sem));
+      Thread trainT2	= new Thread(new Train(trainId2,speed2, sem));
       
       trainT1.start();
       trainT2.start();

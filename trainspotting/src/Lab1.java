@@ -1,5 +1,5 @@
 import TSim.*;
-import java.util.concurrent.TimeUnit;
+
 import java.util.concurrent.*; 
 
 
@@ -17,11 +17,18 @@ public class Lab1 {
 	  this.speed1= speed1;
 	  this.speed2 = speed2;
 	  
-	  Semaphore sem = new Semaphore(1);
+	 Semaphore[] sem = new Semaphore[8];
+	  
+	  for(int i =0; i<8; i++) {
+		  
+		  sem[i] = new Semaphore(1,true);
+		  
+	  }
+	  
     
 
-      Thread trainT1	= new Thread(new Train(trainId1,speed1,sem));
-      Thread trainT2	= new Thread(new Train(trainId2,speed2, sem));
+      Thread trainT1	= new Thread(new Train(trainId1,speed1, tsi, sem));
+      Thread trainT2	= new Thread(new Train(trainId2,speed2,tsi, sem));
       
       trainT1.start();
       trainT2.start();

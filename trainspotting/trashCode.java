@@ -110,3 +110,149 @@ public class Lab1 {
   
 
 }
+
+
+
+
+if (trainAt(6,5,1)) 
+	
+{
+	tsi.setSpeed(id,0);
+//	the junction semphore
+	sem[0].acquire();
+	tsi.setSpeed(id,speed);	
+}
+//sensor right of the junction
+if (trainAt(11,17,1)) 
+{
+	sem[0].release();
+	
+}
+//sensor left of 1st switch
+if (trainAt(15,7,1)) 
+{
+	tsi.setSpeed(id,0);
+//	entring 1st single lane
+	sem[1].acquire();
+	tsi.setSwitch(17,7,2);
+	tsi.setSwitch(15,9,2);
+	tsi.setSpeed(id,speed);
+	
+}
+//sensor left of 2nd switch
+if (trainAt(13,9,1))
+{
+//	exiting 1st single lane
+	sem[1].release();
+	
+}
+//sensor right of 3rd switch
+if (trainAt(6,9,1))
+{
+	tsi.setSpeed(id, 0);
+//	entring 2nd single lane
+	sem[2].acquire();
+	tsi.setSwitch(3,11,2);
+	tsi.setSpeed(id,speed);
+}
+if (trainAt(5,13,1))
+{
+	sem[2].release();
+	StopAndChangeDirection ();
+}
+
+
+
+if (trainAt(5,11,-1)) 
+
+{
+	tsi.setSpeed(id,0);
+	sem[2].acquire();
+	tsi.setSwitch(3,11,1);
+	tsi.setSpeed(id,speed);
+}
+if (trainAt(6,9,-1))
+{
+	sem[2].release();
+	StopAndChangeDirection ();
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if(trainAt(15,7)) {
+	tsi.setSpeed(id,0);
+	if(dir == 1) {
+//		acquire 1stSingleLane semaphore and release firstStopLane
+		sem[3].acquire();
+		sem[0].release();
+		if(sem[4].tryAcquire()) {
+			tsi.setSwitch(17,7,2);
+			tsi.setSwitch(15,9,2);
+			tsi.setSpeed(id,speed);
+		}else {
+			sem[5].acquire();
+			tsi.setSwitch(17,7,2);
+			tsi.setSwitch(15,9,1);
+			tsi.setSpeed(id,speed);
+		}	
+	}
+	if(dir == -1) {
+		
+		sem[3].release();
+//		have to release sem4 or sem5
+		tsi.setSpeed(id,speed);
+		
+	}
+	
+	if(trainAt(15,8)) {
+		tsi.setSpeed(id,0);
+		if(dir == 1) {
+//			acquire 1stSingleLane semaphore and release firstStopLane
+			sem[3].acquire();
+			sem[1].release();
+			if(sem[4].tryAcquire()) {
+				tsi.setSwitch(17,7,2);
+				tsi.setSwitch(15,9,2);
+				tsi.setSpeed(id,speed);
+			}else {
+				sem[5].acquire();
+				tsi.setSwitch(17,7,2);
+				tsi.setSwitch(15,9,1);
+				tsi.setSpeed(id,speed);
+			}
+			
+		}
+		if (dir == -1) {
+			sem[3].release();
+//			have to release sem4 or sem5
+			tsi.setSpeed(id,speed);
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

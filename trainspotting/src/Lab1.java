@@ -17,7 +17,7 @@ public class Lab1 {
 	  this.speed1= speed1;
 	  this.speed2 = speed2;
 	  
-	 Semaphore[] sem = new Semaphore[8];
+	 Semaphore[] sem = new Semaphore[9];
 	  
 	  for(int i =0; i<8; i++) {
 		  

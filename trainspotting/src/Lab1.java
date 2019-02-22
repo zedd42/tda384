@@ -19,7 +19,7 @@ public class Lab1 {
 	  
 	 Semaphore[] sem = new Semaphore[9];
 	  
-	  for(int i =0; i<8; i++) {
+	  for(int i =0; i<=8; i++) {
 		  
 		  sem[i] = new Semaphore(1,true);
 		  

@@ -1,11 +1,5 @@
 import TSim.*;
 import java.util.concurrent.*;
-import java.util.concurrent.TimeUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
 
 public class Train implements Runnable {
 
@@ -29,6 +23,7 @@ public class Train implements Runnable {
 		try {
 
 			tsi.setSpeed(id, speed);
+//			tsi.setDebug(false);
 
 		} catch (CommandException e) {
 			e.printStackTrace(); // or only e.getMessage() for the error
@@ -49,15 +44,18 @@ public class Train implements Runnable {
 				if (trainAt(14, 3)) {
 					
 					tsi.setSpeed(id, 0);
-					
+
 					if (dir == 1) {
 //						semaphore for firstStopUp Lane
-						sem[0].acquire();
+						acquireSemaphore(0);
+						
 						tsi.setSpeed(id, speed);
 
 					}
 					if (dir == -1) {
+						
 						StopAndChangeDirection();
+						tsi.setSpeed(id, speed);
 					}
 				}
 //				sensor leftOfJunction
@@ -65,13 +63,15 @@ public class Train implements Runnable {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
 //						acquire the Junction semaphore
-						sem[2].acquire();
+						acquireSemaphore(2);
+					
 						tsi.setSpeed(id, speed);
 
 					}
 					if (dir == -1) {
 //						relese junction semaphore
-						sem[2].release();
+						relaseSemaphore(2);
+				
 						tsi.setSpeed(id, speed);
 					}
 				}
@@ -80,13 +80,15 @@ public class Train implements Runnable {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
 //						relese junction smaphore
-						sem[2].release();
+						relaseSemaphore(2);
+					
 						tsi.setSpeed(id, speed);
 
 					}
 					if (dir == -1) {
 //						acquire junction semaphore
-						sem[2].acquire();
+						acquireSemaphore(2);
+				
 						tsi.setSpeed(id, speed);
 					}
 				}
@@ -94,15 +96,19 @@ public class Train implements Runnable {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
 //						acquire 1stSingleLane semaphore and release firstStopLane
-						sem[3].acquire();
-						sem[0].release();
-						if (sem[4].tryAcquire()) {
+						acquireSemaphore(3);
+				
+						
+			
+						if (trayingToAcquire(4)) {
+						
 							lastSem = 4;
 							tsi.setSwitch(17, 7, 2);
 							tsi.setSwitch(15, 9, 2);
 							tsi.setSpeed(id, speed);
 						} else {
-							sem[5].acquire();
+							acquireSemaphore(5);
+						
 							lastSem = 5;
 							tsi.setSwitch(17, 7, 2);
 							tsi.setSwitch(15, 9, 1);
@@ -111,12 +117,16 @@ public class Train implements Runnable {
 					}
 					if (dir == -1) {
 
-						sem[3].release();
+						relaseSemaphore(3);
+			
 //						have to release sem4 or sem5
 						if (lastSem == 4) {
-							sem[4].release();
-						} else
-							sem[5].release();
+							relaseSemaphore(4);
+					
+						} else {
+							relaseSemaphore(5);
+							
+						}
 						tsi.setSpeed(id, speed);
 
 					}
@@ -125,32 +135,39 @@ public class Train implements Runnable {
 				if (trainAt(14, 5)) {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
-						sem[1].acquire();
+						acquireSemaphore(1);
+				
 						tsi.setSpeed(id, speed);
 					}
 					if (dir == -1) {
 						StopAndChangeDirection();
+						tsi.setSpeed(id, speed);
 					}
 				}
 				if (trainAt(8, 5)) {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
-						sem[2].acquire();
+						acquireSemaphore(2);
+				
 						tsi.setSpeed(id, speed);
 					}
 					if (dir == -1) {
-						sem[2].release();
-						tsi.setSpeed(id, speed);Exception in thread "Thread-1" java.lang.NullPointerException
+						relaseSemaphore(2);
+					
+						tsi.setSpeed(id, speed);
 					}
+					
 				}
 				if (trainAt(11, 8)) {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
-						sem[2].release();
+						relaseSemaphore(2);
+						
 						tsi.setSpeed(id, speed);
 					}
 					if (dir == -1) {
-						sem[2].acquire();
+						acquireSemaphore(2);
+						
 						tsi.setSpeed(id, speed);
 					}
 				}
@@ -158,16 +175,19 @@ public class Train implements Runnable {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
 //							acquire 1stSingleLane semaphore and release firstStopLane
-						sem[3].acquire();
-						sem[1].release();
-						if (sem[4].tryAcquire()) {
+						acquireSemaphore(3);
+						
+						relaseSemaphore(1);
+						
+						if (trayingToAcquire(4)) {
+							
 							lastSem = 4;
-							System.out.println("yo");
 							tsi.setSwitch(17, 7, 1);
 							tsi.setSwitch(15, 9, 2);
 							tsi.setSpeed(id, speed);
 						} else {
-							sem[5].acquire();
+							acquireSemaphore(5);
+							
 							lastSem = 5;
 							tsi.setSwitch(17, 7, 1);
 							tsi.setSwitch(15, 9, 1);
@@ -175,109 +195,226 @@ public class Train implements Runnable {
 						}
 
 					}
+					
 					if (dir == -1) {
-						sem[3].release();
+						relaseSemaphore(3);
+						
 
 						if (lastSem == 4) {
-							sem[4].release();
+							relaseSemaphore(4);
 						} else
-							sem[5].release();
+							relaseSemaphore(5);
 						tsi.setSpeed(id, speed);
 					}
 				}
 				if (trainAt(13, 9)) {
 					tsi.setSpeed(id, 0);
-
+					
 					if (dir == -1) {
-						sem[3].acquire();
-						if (sem[0].tryAcquire()) {
+						acquireSemaphore(3);
+						
+						if (trayingToAcquire(0)) {
+						
 							lastSem = 0;
 							tsi.setSwitch(15, 9, 2);
 							tsi.setSwitch(17, 7, 2);
 							tsi.setSpeed(id, speed);
 						} else {
-							sem[1].acquire();
+							acquireSemaphore(1);
+							
 							lastSem = 1;
 							tsi.setSwitch(15, 9, 2);
 							tsi.setSwitch(17, 7, 1);
 							tsi.setSpeed(id, speed);
 						}
+						
 					}
 					if (dir == 1) {
-						sem[3].release();
+						relaseSemaphore(3);
+					
 						if (lastSem == 0) {
-							sem[0].release();
-						} else
-							sem[1].release();
+							relaseSemaphore(0);
+						
+						} else {
+							relaseSemaphore(1);
+							
+						}
 						tsi.setSpeed(id, speed);
 					}
 				}
 				if (trainAt(6, 9)) {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
-						sem[6].acquire();
-						if (sem[8].tryAcquire()) {
+						acquireSemaphore(6);
+						if (trayingToAcquire(8)) {
+							relaseSemaphore(4);
 							lastSem = 8;
 							tsi.setSwitch(4, 9, 1); // check if its correct
-							tsi.setSwitch(3, 11, 1); // check if its correct
+							tsi.setSwitch(3, 11, 2); // check if its correct
 							tsi.setSpeed(id, speed);
 						} else {
-							sem[7].acquire();
-							lastSem = 9;
+							acquireSemaphore(7);
+							relaseSemaphore(4);
+							lastSem = 7;
 							tsi.setSwitch(4, 9, 1);
 							tsi.setSwitch(3, 11, 1);
 							tsi.setSpeed(id, speed);
 						}
 					}
 					if (dir == -1) {
-						sem[6].release();
-//							sem[4].acquire();
+						relaseSemaphore(6);
+
 						if (lastSem == 8) {
 
-							sem[8].release();
-							System.out.println("sem8 is released");
+							relaseSemaphore(8);
+							
 						} else
-							sem[7].release();
+							relaseSemaphore(7);
 						tsi.setSpeed(id, speed);
 					}
 				}
 				if (trainAt(13, 10)) {
+					
 					tsi.setSpeed(id, 0);
+					
 					if (dir == 1) {
-						sem[3].release();
+						relaseSemaphore(3);
 						if (lastSem == 0) {
-							sem[0].release();
+							relaseSemaphore(0);
 						} else
-							sem[1].release();
+							relaseSemaphore(1);
 						tsi.setSpeed(id, speed);
 
+					}
+					if (dir == -1) {
+						acquireSemaphore(3);
+						if (trayingToAcquire(0)) {
+							lastSem = 0;
+							tsi.setSwitch(15, 9, 1);
+							tsi.setSwitch(17, 7, 2);
+							tsi.setSpeed(id, speed);
+						} else {
+							acquireSemaphore(1);
+							lastSem = 1;
+							tsi.setSwitch(15, 9, 1);
+							tsi.setSwitch(17, 7, 1);
+							tsi.setSpeed(id, speed);
+						}
 					}
 				}
 				if (trainAt(6, 10)) {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
-						sem[6].acquire();
-						if (sem[8].tryAcquire()) {
+						acquireSemaphore(6);
+						if (trayingToAcquire(8)) {
+							
 							lastSem = 8;
-							tsi.setSwitch(4, 9, 1);
+							tsi.setSwitch(4, 9, 2);
 							tsi.setSwitch(3, 11, 2);
 							tsi.setSpeed(id, speed);
 						} else {
-							sem[7].acquire();
+							acquireSemaphore(7);
+							
 							lastSem = 7;
-							tsi.setSwitch(4, 9, 1);
+							tsi.setSwitch(4, 9, 2);
 							tsi.setSwitch(3, 11, 1);
 							tsi.setSpeed(id, speed);
 
 						}
 					}
 					if (dir == -1) {
-						sem[6].release();
-						if (lastSem == 7) {
-							sem[7].release();
+						relaseSemaphore(6);
+						if (lastSem == 8) {
+							relaseSemaphore(8);
 						} else
-							sem[8].release();
+							relaseSemaphore(7);
 						tsi.setSpeed(id, speed);
+					}
+				}
+				if (trainAt(5, 11)) {
+					tsi.setSpeed(id, 0);
+					if (dir == 1) {
+						relaseSemaphore(6);
+						if (lastSem == 4) {
+							relaseSemaphore(4);
+						} else
+							relaseSemaphore(5);
+						tsi.setSpeed(id, speed);
+
+					}
+					if (dir == -1) {
+						acquireSemaphore(6);
+						if (trayingToAcquire(4)) {
+							lastSem = 4;
+							tsi.setSwitch(3, 11, 1);
+							tsi.setSwitch(4, 9, 1);
+							tsi.setSpeed(id, speed);
+						} else {
+							acquireSemaphore(5);
+							tsi.setSwitch(3, 11, 1);
+							tsi.setSwitch(4, 9, 2);
+							tsi.setSpeed(id, speed);
+						}
+					}
+				}
+				if (trainAt(5, 13)) {
+					tsi.setSpeed(id, 0);
+					System.out.println("ssgj");
+					if (dir == 1) {
+						relaseSemaphore(6);
+						if (lastSem == 4) {
+							relaseSemaphore(4);
+							
+						} else {
+							relaseSemaphore(5);
+							
+						}
+						tsi.setSpeed(id, speed);
+					}
+					if (dir == -1) {
+						
+						acquireSemaphore(6);
+						if (trayingToAcquire(4)) {
+							
+							tsi.setSwitch(3, 11, 1);
+							tsi.setSwitch(4, 9, 1);
+							tsi.setSpeed(id, speed);
+
+						} else {
+							
+							acquireSemaphore(5);
+							
+							tsi.setSwitch(3, 11, 2);
+							tsi.setSwitch(4, 9, 2);
+							tsi.setSpeed(id, speed);
+						}
+
+					}
+				}
+				if (trainAt(14, 11)) {
+					tsi.setSpeed(id, 0);
+					if (dir == 1) {
+						StopAndChangeDirection();
+						relaseSemaphore(7);
+						tsi.setSpeed(id, speed);
+					}
+					if (dir == -1) {
+						acquireSemaphore(7);
+						tsi.setSpeed(id, speed);
+					}
+				}
+				if (trainAt(14, 13)) {
+					tsi.setSpeed(id, 0);
+					if (dir == 1) {
+						StopAndChangeDirection();
+						relaseSemaphore(8);
+						System.out.println("vänder");
+						tsi.setSpeed(id, speed);
+					}
+					if (dir == -1) {
+						acquireSemaphore(8);
+						tsi.setSpeed(id, speed);
+						System.out.println("vänder");
 					}
 				}
 
@@ -296,7 +433,7 @@ public class Train implements Runnable {
 		dir = dir * -1;
 		speed = speed * -1;
 		Thread.sleep(1000 + (20 * Math.abs(speed)));
-		tsi.setSpeed(id, speed);
+//		tsi.setSpeed(id, speed);
 
 	}
 
@@ -307,11 +444,45 @@ public class Train implements Runnable {
 		int y = event.getYpos();
 //		System.out.printf("trainAt(%d,%d,%d) s = %d, x=%d, y=%d dir =%d \n", xPos,yPos,direction,s,x,y,dir);
 
-		if (s == 1 & x == xPos & y == yPos) {
+		if (s < 2 & x == xPos & y == yPos) {
+			System.out.format("Train %d going %d at Sensor (%d,%d)%n", id,dir,x,y);
+			System.out.format("The lastsemaphore is %d%n", lastSem);
 
 			return true;
 
 		} else
 			return false;
 	}
+	
+	
+	private void acquireSemaphore(int id_sem) throws CommandException, InterruptedException{
+		
+		tsi.setSpeed(id, 0);
+		System.out.format("Train %d: Waiting to get semaphore %d%n",id, id_sem);
+		sem[id_sem].acquire();
+		System.out.format("Train %d: Has acquired semaphore %d%n",id, id_sem);
+//		tsi.setSpeed(id, speed);
+	}
+	
+	private void relaseSemaphore(int id_sem) throws CommandException, InterruptedException{
+		
+		sem[id_sem].release();
+		System.out.format("Train %d: Has released semaphore %d%n",id, id_sem);
+		
+	}
+	
+	private boolean trayingToAcquire(int id_sem) throws CommandException, InterruptedException{
+		
+		
+		System.out.format("Train %d: Trying to get semaphore %d%n",id, id_sem);
+		if(sem[id_sem].tryAcquire()) {
+			System.out.format("Train %d: Has acquired semaphore %d%n",id, id_sem);
+			return true;
+		}else {
+			return false;
+		}
+		
+	}
+			
+			
 }

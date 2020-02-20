@@ -1,17 +1,3 @@
 INDEX VERSION 1.131+/chalmers/users/almoh/Documents/git/tda384/.metadata/.plugins/org.eclipse.jdt.core
-140921719.index
-2264521080.index
-3606022723.index
-3935898488.index
-3644567613.index
-2162419688.index
-2563103043.index
-1175494123.index
-1508180850.index
-3579750882.index
 1623869578.index
-1863598656.index
-264737778.index
-2607631248.index
-2539750354.index
-1156085205.index
+1175494123.index

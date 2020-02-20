@@ -41,7 +41,6 @@ public class Train implements Runnable {
 			try {
 
 				event = tsi.getSensor(id);
-				System.out.println(id + " " + counter);
 //				firstStopUp 
 //				sensor aboveFirstStop
 				if (trainAt(14, 3)) {
@@ -339,7 +338,6 @@ public class Train implements Runnable {
 				}
 				if (trainAt(5, 13)) {
 					tsi.setSpeed(id, 0);
-					System.out.println("ssgj");
 					if (dir == 1) {
 						relaseSemaphore(6);
 						relaseSemaphore(45);
@@ -382,12 +380,12 @@ public class Train implements Runnable {
 					tsi.setSpeed(id, 0);
 					if (dir == 1) {
 						StopAndChangeDirection();
-//						relaseSemaphore(8);
+
 						
 						tsi.setSpeed(id, speed);
 					}
 					if (dir == -1) {
-//						acquireSemaphore(8);
+
 						tsi.setSpeed(id, speed);
 					
 					}
@@ -417,11 +415,11 @@ public class Train implements Runnable {
 		int s = event.getStatus();
 		int x = event.getXpos();
 		int y = event.getYpos();
-//		System.out.printf("trainAt(%d,%d,%d) s = %d, x=%d, y=%d dir =%d \n", xPos,yPos,direction,s,x,y,dir);
+
 
 		if (s < 2 & x == xPos & y == yPos) {
 			System.out.format("Train %d going %d at Sensor (%d,%d)%n", id,dir,x,y);
-//			System.out.format("The lastsemaphore is %d%n", lastSem);
+
 
 			return true;
 
@@ -433,13 +431,10 @@ public class Train implements Runnable {
 	private void acquireSemaphore(int id_sem) throws CommandException, InterruptedException{
 		
 		tsi.setSpeed(id, 0);
-//		System.out.format("Train %d: Waiting to get semaphore %d%n",id, id_sem);
+
 		sem[id_sem].acquire();
 		queue.add(id_sem);
 		counter++;
-		
-		System.out.format("Train %d: Has acquired semaphore %d%n",id, id_sem);
-//		tsi.setSpeed(id, speed);
 	}
 	
 	private void relaseSemaphore(int id_sem) throws CommandException, InterruptedException{
@@ -448,19 +443,13 @@ public class Train implements Runnable {
 		int temp = queue.poll();
 		sem[temp].release();
 		counter--;
-		
-		System.out.format("Train %d: Has released semaphore %d %n",id, temp);
-		
 	}
 	
 	private boolean trayingToAcquire(int id_sem) throws CommandException, InterruptedException{
 		
-		
-//		System.out.format("Train %d: Trying to get semaphore %d%n",id, id_sem);
 		if(sem[id_sem].tryAcquire()) {
 			queue.add(id_sem);
 			counter++;
-			System.out.format("Train %d: Has acquired semaphore %d%n",id, id_sem);
 			return true;
 		}else {
 			return false;

@@ -6,47 +6,44 @@
 % Start a new server process with the given name
 % Do not change the signature of this function.
 start(ServerAtom) ->
-
-    
    genserver:start(ServerAtom, #server{}, fun server_handler/2).
    
 stop(ServerAtom) ->
     genserver:request(ServerAtom, #server{active_clients = []}, fun server_handler/2).
 
     
-    % begär att få tillgång till en kanal.
-    % kolla om kanalen existerar sen tidigare
-    % om den existerar 
+    	%the server_handler will 
     
 server_handler(State, {req_channel, Channel_name, From_pid }) ->
-  
-  case maps:is_key(Channel_name, State#server.channel_map) of 
-            
-            true -> 
-                Channel_pid = maps:get(Channel_name, State#server.channel_map),         
-                Channel_pid ! {request, self(), make_ref(),{join_channel_request, From_pid}},
 
-           
-               receive
-                    {result, _, Msg} -> 
-                        case Msg of 
-                            client_added_to_channel_successfully ->
-                                {reply,{user_added_to_channel_successfully , Channel_pid}, State};
-                            alredy_member_error ->
-                                {reply, user_already_member_error, State}
-                        end
-                    end;
-            
-         
-               false -> 
-                    _new_ChannelPid = genserver:start(
-                        Channel_name, 
-                        #clients_connected_to_channel{clients_pids = [From_pid],channel_name = Channel_name }, 
-                        fun server_handler/2 ),
-                    _new_map = maps:put (Channel_name, _new_ChannelPid, State#server.channel_map),
-                    _newState = State#server{channel_map = _new_map},
-                    {reply, {user_added_to_channel_successfully, _new_ChannelPid }, _newState}
-       end  ;    
+case maps:is_key(Channel_name, State#server.channel_map) of 
+
+	true -> 
+		Channel_pid = maps:get(Channel_name, State#server.channel_map),         
+		Channel_pid ! {request, self(), make_ref(),{join_channel_request, From_pid}},
+
+
+		receive
+			{result, _, Msg} -> 
+				case Msg of 
+					client_added_to_channel_successfully ->
+						{reply,{user_added_to_channel_successfully , Channel_pid}, State};
+					alredy_member_error ->
+						{reply, user_already_member_error, State}
+			end
+		end;
+
+
+	false -> 
+		_new_ChannelPid = genserver:start(
+			Channel_name, 
+			#clients_connected_to_channel{clients_pids = [From_pid],channel_name = Channel_name }, 
+			fun server_handler/2 ),
+
+		_new_map = maps:put (Channel_name, _new_ChannelPid, State#server.channel_map),
+		_newState = State#server{channel_map = _new_map},
+		{reply, {user_added_to_channel_successfully, _new_ChannelPid }, _newState}
+end;    
                  
 
 server_handler(State, {leave_channel_req, UserPid}) -> 

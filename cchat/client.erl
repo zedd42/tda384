@@ -31,60 +31,60 @@ initial_state(Nick, GUIAtom, ServerAtom) ->
 % Join channel
 handle(St, {join, Channel}) ->
 
-      try
-      
-    _channel = list_to_atom(Channel),
-    _server = St#client_st.server,
-    _ref = make_ref(),
-    _myPid = self(),    
-    _server ! {request, _myPid, _ref, {req_channel, _channel, _myPid}},    
-    receive 
-      {result, _ref, Msg} ->
-	case Msg of 
-	 {user_added_to_channel_successfully, Channel_pid} -> 
-	  % update the map
-	    _newmap = maps:put(_channel, Channel_pid, St#client_st.channel_map),
-	    _newState = St#client_st{channel_map = _newmap},
-	    {reply, ok, _newState};
-	 {alredy_member_error} ->
-	    {reply, {error, user_already_joined, "You have joined earlier"}, St}
-	 end
+try
+  
+  _channel = list_to_atom(Channel),
+  _server = St#client_st.server,
+  _ref = make_ref(),
+  _myPid = self(),    
+  _server ! {request, _myPid, _ref, {req_channel, _channel, _myPid}},    
+  receive 
+    {result, _ref, Msg} ->
+    case Msg of 
+      {user_added_to_channel_successfully, Channel_pid} -> 
+      % update the map
+      _newmap = maps:put(_channel, Channel_pid, St#client_st.channel_map),
+      _newState = St#client_st{channel_map = _newmap},
+      {reply, ok, _newState};
+      {alredy_member_error} ->
+      {reply, {error, user_already_joined, "You have joined earlier"}, St}
     end
-    catch
-                error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}
-    end;
+  end
+catch
+  error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}
+end;
     
     
 handle(St, {leave, Channel}) ->   
-    _channel = list_to_atom(Channel),
-    _channelMap = St#client_st.channel_map,
-    
-    case maps:is_key(_channel,_channelMap) of 
-       
-       true -> 
-	try
-	  _channelPid = maps:get(_channel,_channelMap),
-	  _ref = make_ref(),
-	  _myPid = self(),
-	  _channelPid ! {request,_myPid,_ref,{leave_channel_req,_myPid}},
-	   receive
-	    {result,_ref,Msg} ->
-	      case Msg of
-		user_leave_successfully ->
-		  {reply,ok,St};
-		user_not_member_error ->
-		  {reply,{error,error_user_not_joined,"Instruction failed: User not member of channel"},St}
-	      end
-	    
-	  end
-	    catch 
-	    error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}
-	  end;
-	     
-	false -> 
-	  {reply,{error,error_user_not_joined,"Instruction failed: User not member of channel"},St}
-	
-      end;
+_channel = list_to_atom(Channel),
+_channelMap = St#client_st.channel_map,
+
+case maps:is_key(_channel,_channelMap) of 
+
+  true -> 
+    try
+      _channelPid = maps:get(_channel,_channelMap),
+      _ref = make_ref(),
+      _myPid = self(),
+      _channelPid ! {request,_myPid,_ref,{leave_channel_req,_myPid}},
+      receive
+        {result,_ref,Msg} ->
+        case Msg of
+          user_leave_successfully ->
+          {reply,ok,St};
+          user_not_member_error ->
+          {reply,{error,error_user_not_joined,"Instruction failed: User not member of channel"},St}
+        end
+
+      end
+    catch 
+      error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}
+    end;
+
+  false -> 
+    {reply,{error,error_user_not_joined,"Instruction failed: User not member of channel"},St}
+
+end;
 	      
 		
 	      
@@ -98,33 +98,27 @@ handle(St, {leave, Channel}) ->
     
 % Sending message (from GUI, to channel)
 handle(St, {message_send, Channel, Msg}) ->
-    
-   try
-    _channelMap = St#client_st.channel_map,
-    _channel = list_to_atom(Channel),  
-    _channelPid = maps:get(_channel,_channelMap),
-    _ref = make_ref(),
-    _myPid = self(),
-    _userNick = St#client_st.nick,
-    _channelPid ! {request,_myPid,_ref,{deliver_message,Msg,_userNick,_myPid}},
-      receive 
-	 {result,_ref, _response} ->
-	case _response of
-	  send_message_successfully ->
-	    {reply,ok,St};
-	  message_empty_error ->
-	    {reply,{error,message_empty_error,"Operation failed: Message empy"}, St}
-	   
-	 
-	end
-	
+
+try
+  _channelMap = St#client_st.channel_map,
+  _channel = list_to_atom(Channel),  
+  _channelPid = maps:get(_channel,_channelMap),
+  _ref = make_ref(),
+  _myPid = self(),
+  _userNick = St#client_st.nick,
+  _channelPid ! {request,_myPid,_ref,{deliver_message,Msg,_userNick,_myPid}},
+  receive 
+    {result,_ref, _response} ->
+      case _response of
+        send_message_successfully ->
+          {reply,ok,St};
+        message_empty_error ->
+          {reply,{error,message_empty_error,"Operation failed: Message empy"}, St}
       end
-      
-      catch
-      
-      error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}
-     
-     end;
+  end
+catch
+  error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}
+end;
     
    
 

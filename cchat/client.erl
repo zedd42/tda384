@@ -46,9 +46,11 @@ handle(St, {join, Channel}) ->
 	    _newmap = maps:put(_channel, Channel_pid, St#client_st.channel_map),
 	    _newState = St#client_st{channel_map = _newmap},
 	    {reply, ok, _newState};
-	 {alredy_member_error} ->
+	 user_already_joined ->
 	    {reply, {error, user_already_joined, "You have joined earlier"}, St}
 	 end
+    after 3000 ->
+        {reply, {error,server_not_reached, "Couldnt reach server"}, St}
     end
     catch
                 error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}
@@ -73,7 +75,7 @@ handle(St, {leave, Channel}) ->
 		user_leave_successfully ->
 		  {reply,ok,St};
 		user_not_member_error ->
-		  {reply,{error,error_user_not_joined,"Instruction failed: User not member of channel"},St}
+		  {reply,{error,user_not_joined,"Instruction failed: User not member of channel"},St}
 	      end
 	    
 	  end
@@ -82,7 +84,7 @@ handle(St, {leave, Channel}) ->
 	  end;
 	     
 	false -> 
-	  {reply,{error,error_user_not_joined,"Instruction failed: User not member of channel"},St}
+	  {reply,{error,user_not_joined,"Instruction failed: User not member of channel"},St}
 	
       end;
 	      
@@ -107,17 +109,22 @@ handle(St, {message_send, Channel, Msg}) ->
     _myPid = self(),
     _userNick = St#client_st.nick,
     _channelPid ! {request,_myPid,_ref,{deliver_message,Msg,_userNick,_myPid}},
-      receive 
-	 {result,_ref, _response} ->
-	case _response of
-	  send_message_successfully ->
-	    {reply,ok,St};
-	  message_empty_error ->
-	    {reply,{error,message_empty_error,"Operation failed: Message empy"}, St}
-	   
-	 
-	end
-	
+    case maps:is_key (_channel, _channelMap) of 
+        false -> 
+            {reply,{error,user_not_joined,"User hasent joined channel"}, St};
+        true -> 
+            receive 
+                {result,_ref, _response} ->
+                case _response of
+                send_message_successfully ->
+                    {reply,ok,St};   %% fghg
+                user_not_joined ->
+                    {reply,{error,user_not_joined,"User hasent joined channel"}, St}
+                
+                
+                end
+                
+            end
       end
       
       catch

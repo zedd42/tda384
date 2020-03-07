@@ -30,10 +30,10 @@ server_handler(State, {req_channel, Channel_name, From_pid }) ->
                receive
                     {result, _, Msg} -> 
                         case Msg of 
-                            client_added_to_channel_successfully ->
+                            user_added_to_channel_successfully ->
                                 {reply,{user_added_to_channel_successfully , Channel_pid}, State};
-                            alredy_member_error ->
-                                {reply, user_already_member_error, State}
+                            user_already_joined ->
+                                {reply, user_already_joined, State}
                         end
                     end;
             
@@ -70,46 +70,48 @@ server_handler(State, {leave_channel_req, UserPid}) ->
 server_handler(State, {join_channel_request, From_pid}) -> 
 
         case lists:member(From_pid, State#clients_connected_to_channel.clients_pids) of
+            
             true ->
-                {reply, alredy_member_error, State};
+                
+                {reply, user_already_joined, State};
             false ->
                 _newState = State#clients_connected_to_channel{
                         clients_pids = [From_pid |State#clients_connected_to_channel.clients_pids] },
                    
-                {reply, client_added_to_channel_successfully, _newState}
+                {reply, user_added_to_channel_successfully, _newState}
           end;
 
           
  server_handler(State, {deliver_message, Msg, _userNick, _fromPid}) ->
     
-    if 
-        Msg == [] ->
-            {reply,message_empty_error,State};
-            
-        
+    
+       case  lists:member(_fromPid, State#clients_connected_to_channel.clients_pids) of 
+        false ->
+            {reply,user_not_joined ,State};
         true ->
             spawn(fun() -> sendMessage(State,Msg,_userNick,_fromPid) end),
             {reply,send_message_successfully,State}
-     end.
-        
-    
-
-%Elem!{request,self(),make_ref(),{message_receive,_channelName, _userNick, Msg}} 
- 
-
-    
-
+     end;
         
         
+server_handler(State,{stop,Atom}) -> 
+
+        _channelsToDestroy = maps:keys(State#server.channel_map),
+        lists:foreach(
+                fun(E) -> genserver:stop(E) end, _channelsToDestroy),
+        genserver:stop(Atom),
+        {reply,dont_care,State}.        
+
 
 sendMessage(State ,Msg, _userNick, _senderPid) ->
+
+        
 
         UserPids =     lists:delete(_senderPid,State#clients_connected_to_channel.clients_pids),
         ChannelName = State#clients_connected_to_channel.channel_name,
 
         [spawn(fun() -> genserver:request(Client, 
                 {message_receive, ChannelName, _userNick, Msg}) end) || Client <- UserPids].
-
 
 
 

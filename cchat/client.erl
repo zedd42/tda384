@@ -152,7 +152,7 @@ handle(St, {message_send, Channel, Msg}) ->
     
       catch
       
-      _:_ -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}
+     error:badarg -> {reply, {error,ched, "Channel unresponsive"}, St}
      
      end;
     

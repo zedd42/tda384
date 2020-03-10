@@ -75,7 +75,7 @@ handle(St, {leave, Channel}) ->
 	      case Msg of
 		user_leave_successfully ->
             _newmap = maps:remove(_channel, _channelMap),
-		   {reply,ok,St#client_st._newmap};
+		   {reply,ok,St#client_st{channel_map = _newmap}};
 		user_not_member_error ->
 		  {reply,{error,user_not_joined,"Instruction failed: User not member of channel"},St}
 	      end

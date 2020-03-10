@@ -37,7 +37,8 @@ handle(St, {join, Channel}) ->
     _server = St#client_st.server,
     _ref = make_ref(),
     _myPid = self(),    
-    _server ! {request, _myPid, _ref, {req_channel, _channel, _myPid}},    
+    _server ! {request, _myPid, _ref, {req_channel, _channel, _myPid}},   
+
     receive 
       {result, _ref, Msg} ->
 	case Msg of 
@@ -100,6 +101,8 @@ handle(St, {leave, Channel}) ->
     
 % Sending message (from GUI, to channel)
 handle(St, {message_send, Channel, Msg}) ->
+
+
     
    try
    
@@ -109,9 +112,23 @@ handle(St, {message_send, Channel, Msg}) ->
     _ref = make_ref(),
     _myPid = self(),
     _userNick = St#client_st.nick,
-        
-
+    _server = St#client_st.server,
     
+    _server ! {request, _myPid, _ref, alive},
+
+    receive
+        {result,_,AliveMessage} ->
+        case AliveMessage of
+            
+            im_alive -> ok
+        end
+
+        after 3000 -> 
+            {reply, {error, server_not_reached, "Channel unresponsive"}, St}
+
+    end,
+ 
+
     case maps:is_key (_channel, _channelMap) of 
         false -> 
             {reply,{error,user_not_joiaaned,"User hasent joined channel"}, St};

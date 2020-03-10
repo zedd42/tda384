@@ -102,7 +102,10 @@ server_handler(State,{stop,Atom}) ->
         lists:foreach(
                 fun(E) -> genserver:stop(E) end, _channelsToDestroy),
         genserver:stop(Atom),
-        {reply,dont_care,State}.        
+        {reply,dont_care,State};
+
+server_handler(State, alive) ->
+    {reply,im_alive,State}.     
 
 
 sendMessage(State ,Msg, _userNick, _senderPid) ->

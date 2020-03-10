@@ -123,6 +123,9 @@ handle(St, {message_send, Channel, Msg}) ->
 try
     _server = St#client_st.server,
     case is_process_alive(_server) of 
+        
+        false -> 
+            {reply, {error, server_not_reached, "Channel unresponsive"}, St};
         true ->
            
         _channelMap = St#client_st.channel_map,
@@ -150,11 +153,8 @@ try
                         end
                         
                     end
-              end
-        end;
-        
-    false -> 
-        {reply, {error, server_not_reached, "Channel unresponsive"}, St}
+              end  
+    end
 catch   
     error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St} 
 end;

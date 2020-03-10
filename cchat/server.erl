@@ -13,7 +13,8 @@ start(ServerAtom) ->
 stop(ServerAtom) ->
     
     
-    ServerAtom ! {request, self(), make_ref(),{stop, ServerAtom}}.
+    genserver:stop(ServerAtom).
+
     
     % begär att få tillgång till en kanal.
     % kolla om kanalen existerar sen tidigare

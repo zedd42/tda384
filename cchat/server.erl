@@ -11,7 +11,18 @@ start(ServerAtom) ->
    genserver:start(ServerAtom, #server{}, fun server_handler/2).
    
 stop(ServerAtom) ->
-    genserver:request(ServerAtom, #server{active_clients = []}, fun server_handler/2).
+    
+    All_channels = maps:keys(ServerAtom#server.channel_map),
+    
+    lists:foreach (fun(Elem) -> exit(Elem, kill) end, maps:get(All_channels, ServerAtom#server.channel_map)),
+    exit(ServerAtom, kill),
+    All_users = ServerAtom#server.active_clients,
+    lists:foreach (fun(Elem) -> genserver:stop(Elem) end, All_channels),
+    lists:foreach (fun(Elem) -> genserver:stop(Elem) end, All_users),
+    genserver:stop(ServerAtom),
+    {reply, ok, ServerAtom}.
+    
+     
 
     
     % begär att få tillgång till en kanal.
@@ -87,7 +98,7 @@ server_handler(State, {join_channel_request, From_pid}) ->
     
        case  lists:member(_fromPid, State#clients_connected_to_channel.clients_pids) of 
         false ->
-            {reply,user_not_joined ,State};
+            {reply,user_d ,State};
         true ->
             spawn(fun() -> sendMessage(State,Msg,_userNick,_fromPid) end),
             {reply,send_message_successfully,State}

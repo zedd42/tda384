@@ -19,3 +19,4 @@
 2019-02-26 17:10:28,241 [Worker-13: Auto share git projects] WARN  org.eclipse.jgit.util.FS - null
 2019-02-26 17:12:17,696 [Worker-18: Loading available Gradle versions] INFO  c.g.t.t.d.PublishedGradleVersions - Gradle version information cache is out-of-date. Trying to update.
 2019-03-11 13:01:43,491 [Worker-1: Refreshing workspace] WARN  org.eclipse.jgit.util.FS - null
+2020-03-01 14:58:34,476 [Worker-4: Building workspace] WARN  org.eclipse.jgit.util.FS - null

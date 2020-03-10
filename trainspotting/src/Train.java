@@ -6,7 +6,8 @@ public class Train implements Runnable {
 	private int id, speed;
 	private int dir = 1; // 1 for down -1 for up
 	private TSimInterface tsi;
-	private SensorEvent event;/	private volatile Semaphore[] sem;
+	private SensorEvent event;
+	private volatile Semaphore[] sem;
 	public int lastSem;
 	public Queue <Integer> queue = new LinkedList<Integer>();
 	public int counter = 0;

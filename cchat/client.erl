@@ -102,17 +102,15 @@ handle(St, {leave, Channel}) ->
 handle(St, {message_send, Channel, Msg}) ->
     
    try
-    try
-        _channelMap = St#client_st.channel_map,
-        _channel = list_to_atom(Channel),  
-        _channelPid = maps:get(_channel,_channelMap),
-        _ref = make_ref(),
-        _myPid = self(),
-        _userNick = St#client_st.nick
+   
+    _channelMap = St#client_st.channel_map,
+    _channel = list_to_atom(Channel),  
+    _channelPid = maps:get(_channel,_channelMap),
+    _ref = make_ref(),
+    _myPid = self(),
+    _userNick = St#client_st.nick
         
-    catch 
-        _:_ -> {reply, {error, server_t_reached, "Channel unresponsive"}, St}
-    end,
+
     
     case maps:is_key (_channel, _channelMap) of 
         false -> 

@@ -151,7 +151,7 @@ handle(St, {message_send, Channel, Msg}) ->
     
       catch
       
-      _:_ -> {reply, {error, user_not_joined, "Channel unresponsive"}, St}
+      _:_ -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}
      
      end;
     

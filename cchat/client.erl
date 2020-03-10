@@ -156,7 +156,7 @@ try
               end  
     end
 catch   
-    error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St} 
+    error:noProc -> {reply, {error, server_not_reached, "Channel unresponsive"}, St} 
 end;
 
 

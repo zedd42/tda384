@@ -114,21 +114,21 @@ handle(St, {message_send, Channel, Msg}) ->
     _myPid = self(),
     _userNick = St#client_st.nick,
     _server = St#client_st.server,
-    
-    _server ! {request, _myPid, _ref, alive},
+  %  
+%    _server ! {request, _myPid, _ref, alive},%
 
-    receive
-        {result,_,AliveMessage} ->
-        case AliveMessage of
-            
-            im_alive -> ok
-        end
+%    receive
+%        {result,_,AliveMessage} ->
+%        case AliveMessage of
+%            
+%            im_alive -> ok
+%        end%
 
-        after 3000 -> 
-            {reply, {error, server_not_reached, "Channel unresponsive"}, St}
+%        after 3000 -> 
+%            {reply, {error, server_not_reached, "Channel unresponsive"}, St}%
 
-    end,
- 
+%    end,
+% 
 
     case maps:is_key (_channel, _channelMap) of 
         false -> 

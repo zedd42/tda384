@@ -108,7 +108,7 @@ handle(St, {message_send, Channel, Msg}) ->
     _channelPid = maps:get(_channel,_channelMap),
     _ref = make_ref(),
     _myPid = self(),
-    _userNick = St#client_st.nick
+    _userNick = St#client_st.nick,
         
 
     

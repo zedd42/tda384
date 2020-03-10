@@ -12,18 +12,8 @@ start(ServerAtom) ->
    
 stop(ServerAtom) ->
     
-    All_channels = maps:keys(ServerAtom#server.channel_map),
     
-    lists:foreach (fun(Elem) -> exit(Elem, kill) end, maps:get(All_channels, ServerAtom#server.channel_map)),
-    exit(ServerAtom, kill),
-    All_users = ServerAtom#server.active_clients,
-    lists:foreach (fun(Elem) -> genserver:stop(Elem) end, All_channels),
-    lists:foreach (fun(Elem) -> genserver:stop(Elem) end, All_users),
-    genserver:stop(ServerAtom),
-    {reply, ok, ServerAtom}.
-    
-     
-
+    ServerAtom ! {request, self(), make_ref(),{stop, ServerAtom}}.
     
     % begär att få tillgång till en kanal.
     % kolla om kanalen existerar sen tidigare

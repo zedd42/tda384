@@ -153,7 +153,7 @@ case is_process_alive(_server) of
           end
         
     catch   
-        error:noProc -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}    
+        error:badarg -> {reply, {error, server_not_reached, "Channel unresponsive"}, St}    
     end;
     
    false -> 

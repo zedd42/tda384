@@ -122,6 +122,7 @@ handle(St, {message_send, Channel, Msg}) ->
 % 
 try
     _server = St#client_st.server,
+     io:fwrite("~p~n",_server),
     case is_process_alive(_server) of 
         
         false -> 

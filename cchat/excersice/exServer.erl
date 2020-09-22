@@ -9,8 +9,15 @@ start() ->
 handler() ->
 
     receive 
-        {SenderPid, Msg} -> 
-            SenderPid ! {SenderPid, Msg}
+        {SenderPid, {join, Cname}} -> 
+            Pid = spawn(?MODULE, channelHandler, [Cname, SenderPid]),
+            register(Cname, Pid)
+            
     end.
+
+channelHandler(Cname, SenderPid, MassegeThread) -> 
+    a_chanel_has_been_created.
+
+
 
 

@@ -40,6 +40,8 @@ handle(St, {join, Channel}) ->
     _server ! {request, _myPid, _ref, {req_channel, _channel, _myPid}},   
 
     receive 
+
+        
       {result, _ref, Msg} ->
 	case Msg of 
 	 {user_added_to_channel_successfully, Channel_pid} -> 
@@ -99,36 +101,15 @@ handle(St, {leave, Channel}) ->
 
     % TODO: Implement this function
     % {reply, ok, St} ;
-    
+
+
+
+
 % Sending message (from GUI, to channel)
 handle(St, {message_send, Channel, Msg}) ->
+_server = St#client_st.server,
 
-
-
-      %  
-%    _server ! {request, _myPid, _ref, alive},%
-
-%    receive
-%        {result,_,AliveMessage} ->
-%        case AliveMessage of
-%            
-%            im_alive -> ok
-%        end%
-
-%        after 3000 -> 
-%            {reply, {error, server_not_reached, "Channel unresponsive"}, St}%
-
-%    end,
-% 
 try
-    _server = St#client_st.server,
-     io:fwrite("~p~n",_server),
-    case is_process_alive(_server) of 
-        
-        false -> 
-            {reply, {error, server_not_reached, "Channel unresponsive"}, St};
-        true ->
-           
         _channelMap = St#client_st.channel_map,
         _channel = list_to_atom(Channel),  
         _channelPid = maps:get(_channel,_channelMap),
@@ -155,10 +136,11 @@ try
                         
                     end
               end  
-    end
+    
 catch   
     error:noProc -> {reply, {error, server_not_reached, "Channel unresponsive"}, St} 
 end;
+
 
 
 % This case is only relevant for the distinction assignment!
@@ -187,3 +169,22 @@ handle(St, quit) ->
 % Catch-all for any unhandled requests
 handle(St, Data) ->
     {reply, {error, not_implemented, "Client does not handle this command"}, St} .
+
+
+is_server_alive(St, Server) -> 
+        
+       
+        
+        _ref = make_ref(),
+        _myPid = self(),
+        
+    Server ! {request, _myPid, _ref, alive},
+    receive
+        {result,_,Msg} ->
+            case Msg of
+                im_alive -> ok
+            end
+    after 3000 -> 
+        {reply, {error, server_not_reached, "Channel unresponsive"}, St}
+
+    end.

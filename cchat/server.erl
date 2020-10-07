@@ -113,6 +113,7 @@ sendMessage(State ,Msg, _userNick, _senderPid) ->
         
 
         UserPids =     lists:delete(_senderPid,State#clients_connected_to_channel.clients_pids),
+       % UserPids =     _senderPid,State#clients_connected_to_channel.clients_pids,
         ChannelName = State#clients_connected_to_channel.channel_name,
 
         [spawn(fun() -> genserver:request(Client, 

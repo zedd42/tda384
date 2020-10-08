@@ -12,14 +12,16 @@ start(ServerAtom) ->
    
 stop(ServerAtom) ->
     
-    
-    genserver:stop(ServerAtom).
+    genserver:request(ServerAtom,{stop,ServerAtom}).
 
     
     % begär att få tillgång till en kanal.
     % kolla om kanalen existerar sen tidigare
     % om den existerar 
-    
+
+server_handler(State,{alive, _myPid}) ->
+    {reply,im_alive,State}; 
+
 server_handler(State, {req_channel, Channel_name, From_pid }) ->
   
   case maps:is_key(Channel_name, State#server.channel_map) of 
@@ -61,12 +63,6 @@ server_handler(State, {leave_channel_req, UserPid}) ->
             false -> 
                 {reply, user_not_member_error, State }
         end;
-                
-            
-
-        
-        
-        
         
       
 server_handler(State, {join_channel_request, From_pid}) -> 
@@ -94,18 +90,19 @@ server_handler(State, {join_channel_request, From_pid}) ->
             spawn(fun() -> sendMessage(State,Msg,_userNick,_fromPid) end),
             {reply,send_message_successfully,State}
      end;
-        
-        
-server_handler(State,{stop,Atom}) -> 
+
+
+ 
+ server_handler(State,{stop,Atom}) -> 
 
         _channelsToDestroy = maps:keys(State#server.channel_map),
         lists:foreach(
                 fun(E) -> genserver:stop(E) end, _channelsToDestroy),
         genserver:stop(Atom),
-        {reply,dont_care,State};
-
-server_handler(State, alive) ->
-    {reply,im_alive,State}.     
+        {reply,dont_care,State}.
+        
+        
+    
 
 
 sendMessage(State ,Msg, _userNick, _senderPid) ->
@@ -122,7 +119,7 @@ sendMessage(State ,Msg, _userNick, _senderPid) ->
 
 
 
- 
+
                     
               
         

@@ -107,40 +107,39 @@ handle(St, {leave, Channel}) ->
 
 % Sending message (from GUI, to channel)
 handle(St, {message_send, Channel, Msg}) ->
-_server = St#client_st.server,
-
-try
-        _channelMap = St#client_st.channel_map,
-        _channel = list_to_atom(Channel),  
-        _channelPid = maps:get(_channel,_channelMap),
-        _ref = make_ref(),
-        _myPid = self(),
-        _userNick = St#client_st.nick,
-
-
-       
-            case maps:is_key (_channel, _channelMap) of 
-                false -> 
-                    {reply,{error,user_not_joiaaned,"User hasent joined channel"}, St};
-                true -> 
-                %     _channelPid = maps:get(_channel,_channelMap),
+    _channel = list_to_atom(Channel),
+    _channelMap = St#client_st.channel_map,
+  
+    case maps:is_key (_channel, _channelMap) of
+        false -> 
+            {reply,{error,user_not_joined,"User hasent joined channel 1!!"}, St};
+        true ->
+            _channelPid = maps:get(_channel,_channelMap),
+            case is_process_alive(_channelPid) of
+                false -> {reply, {error, server_not_reached, "300 Channel unresponsive"}, St};
+                true ->
+                    _ref = make_ref(),
+                    _myPid = self(),
+                    _userNick = St#client_st.nick,
                     _channelPid ! {request,_myPid,_ref,{deliver_message,Msg,_userNick,_myPid}},
-                    receive 
-                        {result,_ref, _response} ->
-                        case _response of
-                        send_message_successfully ->
-                            {reply,ok,St};   %% fghg
-                        user_not_joined ->
-                            {reply,{error,user_not_joined,"User hasent joined channel"}, St}                
-                        end
-                        
-                    end
-              end  
-    
-catch   
-    error:noProc -> {reply, {error, server_not_reached, "Channel unresponsive"}, St} 
-end;
+                    receive
+                        {result, _ref , _response}   ->
+                            case _response of
+                                send_message_successfully ->
+                                    {reply, ok, St};
+                                user_not_joined ->
+                                    {reply,{error,user_not_joined,"User hasent joined channel 2!!"}, St} 
+                            end
+                    after 3000 -> 
+                        {reply, {error, server_not_reached, "300 Channel unresponsive"}, St}
 
+                    end
+            
+            end
+    end;
+
+
+                        
 
 
 % This case is only relevant for the distinction assignment!
@@ -171,20 +170,3 @@ handle(St, Data) ->
     {reply, {error, not_implemented, "Client does not handle this command"}, St} .
 
 
-is_server_alive(St, Server) -> 
-        
-       
-        
-        _ref = make_ref(),
-        _myPid = self(),
-        
-    Server ! {request, _myPid, _ref, alive},
-    receive
-        {result,_,Msg} ->
-            case Msg of
-                im_alive -> ok
-            end
-    after 3000 -> 
-        {reply, {error, server_not_reached, "Channel unresponsive"}, St}
-
-    end.

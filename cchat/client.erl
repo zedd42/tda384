@@ -108,35 +108,28 @@ handle(St, {leave, Channel}) ->
 % Sending message (from GUI, to channel)
 handle(St, {message_send, Channel, Msg}) ->
     _channel = list_to_atom(Channel),
-    _channelMap = St#client_st.channel_map,
-  
-    case maps:is_key (_channel, _channelMap) of
-        false -> 
-            {reply,{error,user_not_joined,"User hasent joined channel 1!!"}, St};
-        true ->
-            _channelPid = maps:get(_channel,_channelMap),
-            case is_process_alive(_channelPid) of
-                false -> {reply, {error, server_not_reached, "300 Channel unresponsive"}, St};
-                true ->
-                    _ref = make_ref(),
-                    _myPid = self(),
-                    _userNick = St#client_st.nick,
-                    _channelPid ! {request,_myPid,_ref,{deliver_message,Msg,_userNick,_myPid}},
-                    receive
-                        {result, _ref , _response}   ->
-                            case _response of
-                                send_message_successfully ->
-                                    {reply, ok, St};
-                                user_not_joined ->
-                                    {reply,{error,user_not_joined,"User hasent joined channel 2!!"}, St} 
-                            end
-                    after 3000 -> 
-                        {reply, {error, server_not_reached, "300 Channel unresponsive"}, St}
-
-                    end
-            
-            end
+    
+    try 
+        _ref = make_ref(),
+        _myPid = self(),
+        _userNick = St#client_st.nick,
+        _channel ! {request,_myPid,_ref,{deliver_message,Msg,_userNick,_myPid}},
+        receive
+            {result, _ref , _response}   ->
+                case _response of
+                    send_message_successfully ->
+                        {reply, ok, St};
+                    user_not_joined ->
+                        {reply,{error,user_not_joined,"user_not_joined"}, St} 
+                end
+        after 3000 -> 
+            {reply, {error, server_not_reached, "Server not reached"}, St}
+        end
+    catch error:Error -> {reply, {error, server_not_reached, "Server not reached"}, St}
     end;
+            
+            
+    
 
 
                         

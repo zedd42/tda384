@@ -85,7 +85,7 @@ server_handler(State, {join_channel_request, From_pid}) ->
     
        case  lists:member(_fromPid, State#clients_connected_to_channel.clients_pids) of 
         false ->
-            {reply,user_d ,State};
+            {reply,user_not_joined ,State};
         true ->
             spawn(fun() -> sendMessage(State,Msg,_userNick,_fromPid) end),
             {reply,send_message_successfully,State}

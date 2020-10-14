@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <code>ForkJoinSolver</code> implements a solver for
@@ -32,6 +33,7 @@ public class ForkJoinSolver
     {
         super(maze);
         
+        
     }
 
     /**
@@ -50,6 +52,13 @@ public class ForkJoinSolver
         this(maze);
         this.forkAfter = forkAfter;
     }
+      public ForkJoinSolver(Maze maze, int forkAfter, int start, Map<Integer, Integer> predecessor)
+    {
+        this(maze);
+        this.forkAfter = forkAfter;
+        this.start = start;
+        this.predecessor = predecessor;
+    }
 
     /**
      * Searches for and returns the path, as a list of node
@@ -65,13 +74,14 @@ public class ForkJoinSolver
     @Override
     public List<Integer> compute()
     {
+     
         return parallelSearch();
     }
     
     private List<Integer> parallelSearch()
     {
         int player = maze.newPlayer(start);
-        int player2 =maze.newPlayer(start);
+        int counter = 0;
         // start with start node
         frontier.push(start);
         // as long as not all nodes have been processed
@@ -91,6 +101,7 @@ public class ForkJoinSolver
                 maze.move(player, current);
                 // mark node as visited
                 visited.add(current);
+            
                 // for every node nb adjacent to current
                 for (int nb: maze.neighbors(current)) {
                     // add nb to the nodes to be processed
@@ -99,8 +110,27 @@ public class ForkJoinSolver
                     // nb can be reached from current (i.e., current is nb's predecessor)
                     if (!visited.contains(nb))
                         predecessor.put(nb, current);
+                    if ((maze.neighbors(current).size() > 2) && forkAfter <= counter){
+                        ForkJoinSolver fjs = new ForkJoinSolver(maze, forkAfter, nb, predecessor);
+                       // ForkJoinSolver fjs2 = new ForkJoinSolver(maze, forkAfter, nb, predecessor);
+                        fjs.fork();
+                       
+                        
+
+                        List<Integer> path = fjs.join();
+                        //if the path found was not null, return the path
+                        if(path != null)
+                            return path;
+                        
+                        
+                    }
+            
                 }
+                
+                
+
             }
+            counter ++;
         }
         // all nodes explored, no goal found
         return null;
